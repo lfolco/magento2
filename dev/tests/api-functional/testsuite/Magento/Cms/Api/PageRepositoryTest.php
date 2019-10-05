@@ -147,11 +147,13 @@ class PageRepositoryTest extends WebapiAbstract
     {
         $pageTitle = 'Page title';
         $newPageTitle = 'New Page title';
+        $pageContent = 'Here is some sample content';
         $pageIdentifier = 'page-title' . uniqid();
         /** @var  \Magento\Cms\Api\Data\PageInterface $pageDataObject */
         $pageDataObject = $this->pageFactory->create();
         $pageDataObject->setTitle($pageTitle)
-            ->setIdentifier($pageIdentifier);
+            ->setIdentifier($pageIdentifier)
+            ->setContent($pageContent);
         $this->currentPage = $this->pageRepository->save($pageDataObject);
         $this->dataObjectHelper->populateWithArray(
             $this->currentPage,
@@ -165,8 +167,8 @@ class PageRepositoryTest extends WebapiAbstract
 
         $serviceInfo = [
             'rest' => [
-                'resourcePath' => self::RESOURCE_PATH,
-                'httpMethod' => \Magento\Framework\Webapi\Rest\Request::HTTP_METHOD_POST,
+                'resourcePath' => sprintf('%s/%s?XDEBUG_SESSION_START=PHPSTORM', self::RESOURCE_PATH, $this->currentPage->getId()),
+                'httpMethod' => \Magento\Framework\Webapi\Rest\Request::HTTP_METHOD_PUT,
             ],
             'soap' => [
                 'service' => self::SERVICE_NAME,
@@ -175,11 +177,13 @@ class PageRepositoryTest extends WebapiAbstract
             ],
         ];
 
-        $page = $this->_webApiCall($serviceInfo, ['page' => $pageData]);
+        //$page = $this->_webApiCall($serviceInfo, ['page' => $pageData]);
+        $page = $this->_webApiCall($serviceInfo, ['page' => ['title' => $newPageTitle]]);
         $this->assertNotNull($page['id']);
 
         $pageData = $this->pageRepository->getById($page['id']);
         $this->assertEquals($pageData->getTitle(), $newPageTitle);
+        $this->assertEquals($pageData->getContent(), $pageContent);
     }
 
     /**

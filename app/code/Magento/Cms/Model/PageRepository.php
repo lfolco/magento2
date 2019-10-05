@@ -183,6 +183,17 @@ class PageRepository implements PageRepositoryInterface
                     $page->setCustomThemeFrom($savedPage->getCustomThemeFrom());
                 }
             }
+            // populate the $page object with existing data
+            if ($page->getId() && isset($savedPage)) {
+                $newData = array_replace_recursive($savedPage->getData(), $page->getData());
+                $page->addData($newData);
+                // don't want to do this, it will overwrite it with the saved object data
+//                $this->dataObjectHelper->populateWithArray(
+//                    $page->getData(),
+//                    $newData,
+//                    Data\PageInterface::class
+//                );
+            }
 
             $this->resource->save($page);
         } catch (\Exception $exception) {
